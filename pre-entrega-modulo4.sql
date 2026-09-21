@@ -30,8 +30,9 @@ WHERE p.categoria = c.nombre;
 
 
 -- 1. RENTABILIDAD POR CATEGORÍA
--- Permite identificar qué categorías generan mayores ingresos y unidades vendidas.
--- Se define un umbral de $10.000 para destacar las categorías con ventas superiores a ese monto.
+-- Permite identificar las categorías que generan mayores ingresos y unidades vendidas.
+-- Se establece un umbral de ingresos superior a $10.000 para identificar las categorías
+-- de mayor impacto comercial y priorizarlas en decisiones de reposición de stock.
 
 SELECT
     c.nombre AS categoria,
@@ -49,14 +50,16 @@ HAVING SUM(v.cantidad * p.precio) > 10000;
 -- 2. CLIENTES SIN COMPRAS
 -- Permite identificar clientes registrados que todavía no realizaron compras,
 -- para detectar oportunidades de activación o seguimiento comercial.
+-- COALESCE permite mostrar 0 en lugar de NULL para los clientes sin compras.
 
 SELECT
     c.nombre AS cliente,
-    COALESCE(v.id_venta::TEXT, 'Sin compras') AS estado
+    COALESCE(SUM(v.cantidad), 0) AS total_compras
 FROM clientes c
 LEFT JOIN ventas v
-        ON c.id_cliente = v.id_cliente
-WHERE v.id_venta IS NULL;
+    ON c.id_cliente = v.id_cliente
+WHERE v.id_venta IS NULL
+GROUP BY c.id_cliente, c.nombre;
 
 
 -- 3. TOP DE COMPRAS POR CLIENTE
